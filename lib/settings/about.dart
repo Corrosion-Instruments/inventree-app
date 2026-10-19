@@ -1,6 +1,7 @@
 import "package:inventree/api.dart";
+import "package:inventree/app_brand.dart";
 import "package:inventree/app_colors.dart";
-import "package:inventree/inventree/update_check.dart";
+import "package:inventree/widget/app_updates.dart";
 import "package:inventree/settings/release.dart";
 
 import "package:flutter/material.dart";
@@ -210,23 +211,10 @@ class InvenTreeAboutWidget extends StatelessWidget {
         title: Text(L10().version),
         subtitle: Text("${info.version} - Build ${info.buildNumber}"),
         leading: Icon(TablerIcons.info_circle),
-        trailing: UpdateChecker().newVersionAvailable
-            ? Icon(TablerIcons.alert_circle, color: COLOR_WARNING)
-            : Icon(TablerIcons.circle_check, color: COLOR_SUCCESS),
       ),
     );
 
-    UpdateChecker().checkForUpdate();
-
-    if (!UpdateChecker().newVersionAvailable) {
-      tiles.add(
-        ListTile(
-          title: Text(L10().versionNewer),
-          leading: Icon(TablerIcons.alert_circle, color: COLOR_WARNING),
-          trailing: LargeText(UpdateChecker().latestVersion),
-        ),
-      );
-    }
+    tiles.add(const AppUpdatesTile());
 
     tiles.add(
       ListTile(
@@ -289,7 +277,9 @@ class InvenTreeAboutWidget extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(L10().appAbout)),
+      appBar: AppBar(
+        title: Text(L10().appAbout.replaceAll("InvenTree", APP_DISPLAY_NAME)),
+      ),
       body: ListView(
         children: ListTile.divideTiles(context: context, tiles: tiles).toList(),
       ),

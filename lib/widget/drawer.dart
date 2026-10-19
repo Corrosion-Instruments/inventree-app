@@ -4,6 +4,7 @@ import "package:flutter_tabler_icons/flutter_tabler_icons.dart";
 import "package:package_info_plus/package_info_plus.dart";
 
 import "package:inventree/api.dart";
+import "package:inventree/app_brand.dart";
 import "package:inventree/app_colors.dart";
 import "package:inventree/inventree/build.dart";
 import "package:inventree/inventree/part.dart";
@@ -21,6 +22,7 @@ import "package:inventree/widget/part/category_display.dart";
 import "package:inventree/widget/notifications.dart";
 import "package:inventree/widget/order/purchase_order_list.dart";
 import "package:inventree/widget/stock/location_display.dart";
+import "package:inventree/widget/supplier_scan.dart";
 
 /*
  * Custom "drawer" widget for the InvenTree app.
@@ -124,6 +126,16 @@ class _InvenTreeDrawerState extends State<InvenTreeDrawer> {
       Navigator.push(
         widget.parentContext,
         MaterialPageRoute(builder: (context) => LocationDisplayWidget(null)),
+      );
+    }
+  }
+
+  void _supplierScan() {
+    _closeDrawer();
+    if (_checkConnection()) {
+      Navigator.push(
+        widget.parentContext,
+        MaterialPageRoute(builder: (context) => const SupplierScanWidget()),
       );
     }
   }
@@ -236,7 +248,7 @@ class _InvenTreeDrawerState extends State<InvenTreeDrawer> {
       ListTile(
         leading: Image.asset("assets/image/logo_transparent.png", height: 24),
         title: Text(
-          L10().appTitle,
+          APP_DISPLAY_NAME,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         onTap: _home,
@@ -251,6 +263,16 @@ class _InvenTreeDrawerState extends State<InvenTreeDrawer> {
           title: Text(L10().parts),
           leading: Icon(TablerIcons.box, color: COLOR_ACTION),
           onTap: _parts,
+        ),
+      );
+    }
+
+    if (InvenTreePart().canView) {
+      tiles.add(
+        ListTile(
+          title: const Text("Supplier Scan"),
+          leading: Icon(TablerIcons.scan, color: COLOR_ACTION),
+          onTap: _supplierScan,
         ),
       );
     }

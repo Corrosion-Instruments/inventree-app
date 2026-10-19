@@ -16,6 +16,7 @@ import "package:sentry_flutter/sentry_flutter.dart";
 import "package:inventree/dsn.dart";
 
 import "package:inventree/managed_config.dart";
+import "package:inventree/app_brand.dart";
 import "package:inventree/preferences.dart";
 import "package:inventree/inventree/sentry.dart";
 import "package:inventree/l10n/supported_locales.dart";
@@ -23,6 +24,7 @@ import "package:inventree/l10n/collected/app_localizations.dart";
 import "package:inventree/settings/release.dart";
 import "package:inventree/user_profile.dart";
 import "package:inventree/widget/home.dart";
+import "package:inventree/widget/app_updates.dart";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -115,7 +117,8 @@ class InvenTreeApp extends StatefulWidget {
       context.findAncestorStateOfType<InvenTreeAppState>();
 }
 
-class InvenTreeAppState extends State<StatefulWidget> {
+class InvenTreeAppState extends State<StatefulWidget>
+    with WidgetsBindingObserver {
   InvenTreeAppState(this.savedThemeMode) : super();
 
   // Custom _locale (default = null; use system default)
@@ -126,6 +129,7 @@ class InvenTreeAppState extends State<StatefulWidget> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     // Run some async init tasks
     runInitTasks();
@@ -150,6 +154,24 @@ class InvenTreeAppState extends State<StatefulWidget> {
 
     manager.setThemeMode(mode);
     await clearPendingManagedThemeMode();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _checkAppUpdate();
+  }
+
+  void _checkAppUpdate() {
+    final updateContext = OneContext().key.currentContext;
+    if (mounted && updateContext != null && !kIsWeb && Platform.isAndroid) {
+      unawaited(checkForAppUpdates(updateContext));
+    }
   }
 
   // Run app init routines in the background
@@ -186,6 +208,7 @@ class InvenTreeAppState extends State<StatefulWidget> {
         MaterialPageRoute(builder: (context) => ReleaseNotesWidget(notes)),
       );
     }
+    _checkAppUpdate();
   }
 
   // Update the app locale
@@ -217,7 +240,7 @@ class InvenTreeAppState extends State<StatefulWidget> {
         debugShowCheckedModeBanner: false,
         builder: OneContext().builder,
         navigatorKey: OneContext().key,
-        onGenerateTitle: (BuildContext context) => "InvenTree",
+        onGenerateTitle: (BuildContext context) => APP_DISPLAY_NAME,
         home: InvenTreeHomePage(),
         localizationsDelegates: [
           I18N.delegate,

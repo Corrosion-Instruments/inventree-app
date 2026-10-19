@@ -22,6 +22,8 @@ import "package:inventree/barcode/intent_controller.dart";
 import "package:inventree/barcode/wedge_controller.dart";
 import "package:inventree/barcode/controller.dart";
 import "package:inventree/barcode/handler.dart";
+import "package:inventree/barcode/digikey.dart";
+import "package:inventree/barcode/supplier_inventory.dart";
 import "package:inventree/barcode/tones.dart";
 
 import "package:inventree/inventree/company.dart";
@@ -30,6 +32,7 @@ import "package:inventree/inventree/purchase_order.dart";
 import "package:inventree/inventree/stock.dart";
 
 import "package:inventree/widget/dialogs.dart";
+import "package:inventree/widget/progress.dart";
 import "package:inventree/widget/stock/location_display.dart";
 import "package:inventree/widget/part/part_detail.dart";
 import "package:inventree/widget/order/purchase_order_detail.dart";
@@ -169,6 +172,68 @@ Future<Object?> scanBarcode(
  * - PurchaseOrder
  */
 class BarcodeScanHandler extends BarcodeHandler {
+  BarcodeScanHandler({DigiKeyQuery? digiKeyQuery})
+    : _digiKeyQuery = digiKeyQuery;
+
+  final DigiKeyQuery? _digiKeyQuery;
+
+  // Native supplier lookup uses the normal authenticated inventory API, so it
+  // also works on servers where Supplier Scan has not been installed.
+  @override
+  Future<void> processBarcode(
+    String barcode, {
+    String url = "barcode/",
+    Map<String, dynamic> extra_data = const {},
+  }) async {
+    final parsed = SupplierBarcode.parse(barcode);
+    if (parsed == null || url != "barcode/" || extra_data.isNotEmpty) {
+      return super.processBarcode(barcode, url: url, extra_data: extra_data);
+    }
+
+    try {
+      final matches = await SupplierPartLookup(
+        _digiKeyQuery ?? querySupplierInventory,
+      ).find(parsed);
+      if (matches.isEmpty) {
+        barcodeFailureTone();
+        showSnackIcon(
+          "${L10().barcodeNoMatch}: ${parsed.supplierName} ${parsed.sku}${parsed.mpn.isEmpty ? '' : ' / ${parsed.mpn}'}",
+          success: false,
+        );
+        return;
+      }
+
+      int? pk = matches.length == 1 ? matches.single.pk : null;
+      if (pk == null && OneContext.hasContext) {
+        hideLoadingOverlay();
+        pk = await OneContext().showDialog<int>(
+          builder: (context) => SimpleDialog(
+            title: Text("Select part: ${parsed.supplierName} ${parsed.sku}"),
+            children: matches
+                .map(
+                  (part) => ListTile(
+                    title: Text(part.label),
+                    subtitle: Text(part.description),
+                    onTap: () => Navigator.of(context).pop(part.pk),
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      }
+      if (pk != null) {
+        showLoadingOverlay();
+        await onBarcodeMatched({
+          "part": {"pk": pk},
+        });
+      }
+    } catch (error, stackTrace) {
+      sentryReportError("Supplier lookup", error, stackTrace);
+      barcodeFailureTone();
+      showSnackIcon(L10().serverError, success: false);
+    }
+  }
+
   @override
   String getOverlayText(BuildContext context) => L10().barcodeScanGeneral;
 

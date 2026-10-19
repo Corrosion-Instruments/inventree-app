@@ -1,3 +1,19 @@
+## Omni Gears 0.25.4 - October 2026
+---
+
+- Add Supplier Scan to the home screen and navigation menu.
+- Find inventory parts by scanning or pasting DigiKey, LCSC and JLC labels.
+- Show supplier SKU, manufacturer part number, label quantity and matching parts.
+- Handle camera and connected scanners directly in the app without a web plugin.
+- Use bundled Public Sans typography on the new Supplier Scan screen.
+
+## Omni Gears 0.25.3 - October 2026
+---
+
+- Check for app updates on launch using a configurable company update source.
+- Download and verify updates in the app, then confirm installation with Android.
+- Add manual update checks and update-source settings to the About screen.
+
 ## xx.yy.z - Month Year
 ---
 

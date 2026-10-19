@@ -4,6 +4,7 @@ import "package:inventree/settings/stock_settings.dart";
 import "package:package_info_plus/package_info_plus.dart";
 
 import "package:inventree/app_colors.dart";
+import "package:inventree/app_brand.dart";
 import "package:inventree/l10.dart";
 
 import "package:inventree/settings/about.dart";
@@ -63,7 +64,12 @@ class _InvenTreeSettingsState extends State<InvenTreeSettingsWidget> {
             Divider(),
             ListTile(
               title: Text(L10().appSettings),
-              subtitle: Text(L10().appSettingsDetails),
+              subtitle: Text(
+                L10().appSettingsDetails.replaceAll(
+                  "InvenTree",
+                  APP_DISPLAY_NAME,
+                ),
+              ),
               leading: Icon(TablerIcons.settings, color: COLOR_ACTION),
               trailing: LinkIcon(),
               onTap: () {

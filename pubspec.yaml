@@ -1,7 +1,7 @@
 name: inventree
 description: InvenTree stock management
 
-version: 0.25.2+126
+version: 0.25.4+129
 
 environment:
   sdk: ^3.8.1
@@ -13,6 +13,7 @@ dependencies:
   cached_network_image: ^3.3.1            # Download and cache remote images
   camera: ^0.11.1                         # Camera
   cupertino_icons: ^1.0.8
+  crypto: ^3.0.6                        # Verify downloaded app updates
   currency_formatter: ^2.2.1              # Currency formatting
   custom_image_crop: ^0.1.1               # Crop selected images
   datetime_picker_formfield: ^2.0.1       # Date / time picker
@@ -68,10 +69,24 @@ flutter:
   uses-material-design: true
   generate: true
 
+  fonts:
+    - family: Public Sans
+      fonts:
+        - asset: assets/fonts/public-sans/PublicSans-Regular.otf
+          weight: 400
+        - asset: assets/fonts/public-sans/PublicSans-Medium.otf
+          weight: 500
+        - asset: assets/fonts/public-sans/PublicSans-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/public-sans/PublicSans-Bold.otf
+          weight: 700
+
   assets:
     - assets/image/icon.png
     - assets/image/logo_transparent.png
     - assets/release_notes.md
+    - assets/fonts/public-sans/LICENSE.md
+    - assets/fonts/public-sans/OFL.txt
     - assets/credits.md
     - assets/sounds/barcode_scan.mp3
     - assets/sounds/barcode_error.mp3

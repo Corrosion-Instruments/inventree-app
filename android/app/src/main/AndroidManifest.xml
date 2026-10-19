@@ -24,8 +24,18 @@
     </queries>
 
     <application
-        android:label="InvenTree"
+        android:label="Omni Gears"
         android:icon="@mipmap/ic_launcher">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.appupdates.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/app_update_paths" />
+        </provider>
 
         <uses-library
             android:name="com.datalogic.device"
@@ -67,7 +77,8 @@
         Prevent lower level dependencies from including specific permissions.
         Ref: https://developer.android.com/studio/build/manage-manifests
      -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove"/>
+    <!-- Android still asks the user to approve installation of an update. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.INSTALL_PACKAGES" tools:node="remove"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>

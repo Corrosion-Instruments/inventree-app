@@ -1,3 +1,9 @@
+// Share the versions declared in settings.gradle with all Flutter plugins.
+// Otherwise plugins can load different Kotlin compilers into their own scopes.
+plugins {
+    id "com.android.application" apply false
+    id "org.jetbrains.kotlin.android" apply false
+}
 
 allprojects {
     repositories {

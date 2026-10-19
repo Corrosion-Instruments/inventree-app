@@ -5,10 +5,10 @@ import "package:flutter/material.dart";
 import "package:flutter_tabler_icons/flutter_tabler_icons.dart";
 
 import "package:inventree/api.dart";
+import "package:inventree/app_brand.dart";
 import "package:inventree/app_colors.dart";
 import "package:inventree/inventree/build.dart";
 import "package:inventree/inventree/part.dart";
-import "package:inventree/inventree/update_check.dart";
 import "package:inventree/inventree/purchase_order.dart";
 import "package:inventree/inventree/sales_order.dart";
 import "package:inventree/inventree/stock.dart";
@@ -30,6 +30,7 @@ import "package:inventree/widget/build/build_list.dart";
 import "package:inventree/widget/refreshable_state.dart";
 import "package:inventree/widget/snacks.dart";
 import "package:inventree/widget/company/company_list.dart";
+import "package:inventree/widget/supplier_scan.dart";
 
 /*
  * Build a small count badge with the given background/foreground colors,
@@ -135,9 +136,6 @@ class _InvenTreeHomePageState extends State<InvenTreeHomePage>
     // Initially load the profile and attempt server connection
     _loadProfile();
 
-    // Check GitHub for a newer app version
-    _checkForUpdate();
-
     InvenTreeAPI().registerCallback(() {
       if (mounted) {
         setState(() {
@@ -199,6 +197,14 @@ class _InvenTreeHomePageState extends State<InvenTreeHomePage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => LocationDisplayWidget(null)),
+    );
+  }
+
+  void _showSupplierScan(BuildContext context) {
+    if (!InvenTreeAPI().checkConnection()) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SupplierScanWidget()),
     );
   }
 
@@ -299,16 +305,6 @@ class _InvenTreeHomePageState extends State<InvenTreeHomePage>
     ).then((context) {
       // Once we return
       _loadProfile();
-    });
-  }
-
-  Future<void> _checkForUpdate() async {
-    UpdateChecker().checkForUpdate().then((_) {
-      if (mounted) {
-        setState(() {
-          // Update the display if a new version is available
-        });
-      }
     });
   }
 
@@ -560,6 +556,17 @@ class _InvenTreeHomePageState extends State<InvenTreeHomePage>
           callback: () {
             _showParts(context);
           },
+        ),
+      );
+    }
+
+    if (InvenTreePart().canView) {
+      tiles.add(
+        _listTile(
+          context,
+          "Supplier Scan",
+          TablerIcons.scan,
+          callback: () => _showSupplierScan(context),
         ),
       );
     }
@@ -818,7 +825,7 @@ class _InvenTreeHomePageState extends State<InvenTreeHomePage>
           children: [
             Image.asset("assets/image/logo_transparent.png", height: 24),
             SizedBox(width: 8),
-            Text(L10().appTitle),
+            Text(APP_DISPLAY_NAME),
           ],
         ),
         actions: [

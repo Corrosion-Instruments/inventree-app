@@ -36,3 +36,30 @@ User documentation for the InvenTree mobile app can be found [within the InvenTr
 ## Developer Documentation
 
 Refer to the [build instructions](BUILDING.md) for information on how to build the app from source.
+
+## Supplier Scan
+
+Open **Supplier Scan** from the home screen or side menu. Scan a DigiKey ECIA
+2D label or an LCSC/JLC label, or paste its contents and tap **Find part**.
+The screen shows the supplier SKU, MPN, label quantity and matching inventory
+parts. Tap a result to open the existing part; multiple exact matches remain
+available for selection. Camera, keyboard and intent scanners use the app's
+configured scanner settings. The general barcode scanner also supports these
+labels and opens matched parts directly.
+
+Lookup checks supplier SKU, manufacturer MPN, then exact part name or IPN
+(ignoring case). It uses the current server profile's authenticated inventory
+API, supports paginated results, and requires no Supplier Scan server plugin
+or DigiKey API credentials. It does not change stock. Other barcode actions,
+including receiving and assigning barcodes, keep their existing handlers.
+
+The app has no runtime system for installing native UI plugins. InvenTree
+server barcode plugins can also supply scan results through the barcode API;
+native features such as this one ship in an app build. The Supplier Scan screen
+bundles Public Sans from uswds/public-sans revision
+`bae8aade44a1c1a2fdfeaabbfd6b6710b111a3a6`; its license files are included in
+`assets/fonts/public-sans/` and the app's license assets.
+
+Run `flutter test test/digikey_test.dart test/supplier_scan_test.dart
+test/wedge_scanner_test.dart` to check label decoding, matching, pagination,
+native scanner dispatch, keyboard scanning and the Supplier Scan screen.

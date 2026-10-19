@@ -1,84 +1,87 @@
-import "dart:convert";
-
-import "package:http/http.dart" as http;
+import "package:flutter/foundation.dart";
 import "package:package_info_plus/package_info_plus.dart";
 
-const String _githubReleasesUrl =
-    "https://api.github.com/repos/inventree/inventree-app/releases/latest";
+import "package:inventree/inventree/app_update_release.dart";
+import "package:inventree/preferences.dart";
 
-const String _githubReleasesHtmlUrl =
-    "https://github.com/inventree/inventree-app/releases/latest";
+const String defaultUpdateSource = String.fromEnvironment(
+  "OMNI_UPDATE_FEED_URL",
+);
+const String _updateSourcePreference = "omniUpdateFeedUrl";
 
-class UpdateChecker {
+class UpdateChecker extends ChangeNotifier {
   factory UpdateChecker() => _instance;
-
   UpdateChecker._();
-
   static final UpdateChecker _instance = UpdateChecker._();
 
-  bool _fetched = false;
-  bool _newVersionAvailable = false;
-  String _latestVersion = "";
-  String _releaseUrl = _githubReleasesHtmlUrl;
+  String source = defaultUpdateSource;
+  AppUpdateRelease? release;
+  bool checking = false;
+  bool checked = false;
+  String error = "";
+  DateTime? _lastAttempt;
 
-  bool get newVersionAvailable => _newVersionAvailable;
-  String get latestVersion => _latestVersion;
-  String get releaseUrl => _releaseUrl;
+  bool get configured => source.isNotEmpty;
+  bool get newVersionAvailable => release != null;
 
-  Future<void> checkForUpdate() async {
-    if (_fetched) return;
-
-    try {
-      final PackageInfo info = await PackageInfo.fromPlatform();
-      final String currentVersion = info.version;
-
-      final response = await http
-          .get(
-            Uri.parse(_githubReleasesUrl),
-            headers: {"Accept": "application/vnd.github+json"},
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode != 200) return;
-
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      String tagName = (data["tag_name"] as String?) ?? "";
-      final String htmlUrl =
-          (data["html_url"] as String?) ?? _githubReleasesHtmlUrl;
-
-      if (tagName.startsWith("v")) {
-        tagName = tagName.substring(1);
-      }
-
-      if (tagName.isEmpty) return;
-
-      _latestVersion = tagName;
-      _releaseUrl = htmlUrl;
-      _newVersionAvailable = _isNewerVersion(tagName, currentVersion);
-      _fetched = true;
-    } catch (_) {
-      // Fail silently — no network, parse error, API rate limit, etc.
-    }
+  Future<void> loadConfiguration() async {
+    source =
+        (await InvenTreeSettingsManager().getValue(
+                  _updateSourcePreference,
+                  defaultUpdateSource,
+                )
+                as String)
+            .trim();
+    notifyListeners();
   }
 
-  bool _isNewerVersion(String latest, String current) {
+  Future<void> setSource(String value) async {
+    final trimmed = value.trim();
+    if (trimmed.isNotEmpty) validateUpdateSource(trimmed);
+    await InvenTreeSettingsManager().setValue(_updateSourcePreference, trimmed);
+    source = trimmed;
+    release = null;
+    checked = false;
+    error = "";
+    _lastAttempt = null;
+    notifyListeners();
+  }
+
+  Future<void> checkForUpdate({bool force = false}) async {
+    if (checking) return;
+    checking = true;
+    final client = AppUpdateClient();
     try {
-      // Strip any pre-release suffix (e.g. "0.24.4-rc1" → "0.24.4")
-      final latestClean = latest.split("-").first;
-      final currentClean = current.split("-").first;
-
-      final latestParts = latestClean.split(".").map(int.parse).toList();
-      final currentParts = currentClean.split(".").map(int.parse).toList();
-
-      for (int i = 0; i < 3; i++) {
-        final l = i < latestParts.length ? latestParts[i] : 0;
-        final c = i < currentParts.length ? currentParts[i] : 0;
-        if (l > c) return true;
-        if (l < c) return false;
+      await loadConfiguration();
+      if (!configured ||
+          (!force &&
+              _lastAttempt != null &&
+              DateTime.now().difference(_lastAttempt!) <
+                  const Duration(minutes: 15))) {
+        return;
       }
-      return false;
+      _lastAttempt = DateTime.now();
+      error = "";
+      final checkedSource = source;
+      final info = await PackageInfo.fromPlatform();
+      final candidate = await client.latest(
+        validateUpdateSource(checkedSource),
+        installedPackage: info.packageName,
+        installedBuild: int.parse(info.buildNumber),
+      );
+      if (source == checkedSource) {
+        release = candidate;
+        checked = true;
+      }
     } catch (_) {
-      return false;
+      release = null;
+      checked = false;
+      error =
+          "Couldn't check for updates. Check your connection and update address, then try again.";
+    } finally {
+      client.close();
+      checking = false;
+      notifyListeners();
     }
   }
 }

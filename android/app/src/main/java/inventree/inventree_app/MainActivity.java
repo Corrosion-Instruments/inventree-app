@@ -71,6 +71,8 @@ public class MainActivity extends FlutterActivity {
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
 
+        AppUpdateInstaller.register(this, flutterEngine.getDartExecutor().getBinaryMessenger());
+
         new EventChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), EVENT_CHANNEL)
                 .setStreamHandler(new EventChannel.StreamHandler() {
                     @Override
