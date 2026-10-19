@@ -1,3 +1,11 @@
+## Omni Gears 0.25.5 - October 2026
+---
+
+- Receive DigiKey, LCSC and JLC stock from the native Supplier Scan screen.
+- Preview supplier details, review quantity and location, and select an existing part or a category for a new part.
+- Reuse the server's Supplier Scan import and barcode duplicate checks.
+- Require explicit receiving confirmation and prevent repeated submissions after an unconfirmed response.
+
 ## Omni Gears 0.25.4 - October 2026
 ---
 

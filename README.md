@@ -53,6 +53,22 @@ API, supports paginated results, and requires no Supplier Scan server plugin
 or DigiKey API credentials. It does not change stock. Other barcode actions,
 including receiving and assigning barcodes, keep their existing handlers.
 
+To receive stock, scan or paste a label and choose **Preview receiving**, review
+the quantity and stock location, then tap **Receive stock**. Stock add permission
+is required. The native receiving form uses the installed Supplier Scan server
+plugin (0.1.3 or later), including its configured supplier, category suggestions,
+new part/supplier record creation, metadata import and duplicate barcode checks.
+Choose an existing part or a category when the label has no resolved part. Supplier
+API credentials remain on the server. Finding parts still works without the plugin.
+
+Receiving uses the app's current authenticated server profile and the plugin's
+normal CSRF cookie/header handshake. The app always waits for **Receive stock**,
+including when the web plugin's Auto Create setting is enabled. Previously received
+labels require an explicit additional-stock choice. If a receipt cannot be confirmed
+after a connection or server failure, refresh the preview and check the stock before
+resubmitting; the app never retries a receive POST automatically. Successful receipts
+show the created stock item and any supplier metadata import warnings.
+
 The app has no runtime system for installing native UI plugins. InvenTree
 server barcode plugins can also supply scan results through the barcode API;
 native features such as this one ship in an app build. The Supplier Scan screen
@@ -60,6 +76,6 @@ bundles Public Sans from uswds/public-sans revision
 `bae8aade44a1c1a2fdfeaabbfd6b6710b111a3a6`; its license files are included in
 `assets/fonts/public-sans/` and the app's license assets.
 
-Run `flutter test test/digikey_test.dart test/supplier_scan_test.dart
-test/wedge_scanner_test.dart` to check label decoding, matching, pagination,
-native scanner dispatch, keyboard scanning and the Supplier Scan screen.
+Run `flutter test test/digikey_test.dart test/supplier_scan_test.dart test/supplier_receive_test.dart test/wedge_scanner_test.dart`
+to check label decoding, matching, pagination, native scanning, receiving forms,
+the authenticated receiving transport and duplicate/error handling.

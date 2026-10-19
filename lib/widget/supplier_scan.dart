@@ -6,7 +6,10 @@ import "package:inventree/barcode/supplier_capture.dart";
 import "package:inventree/barcode/supplier_inventory.dart";
 import "package:inventree/inventree/part.dart";
 import "package:inventree/inventree/sentry.dart";
+import "package:inventree/inventree/stock.dart";
 import "package:inventree/widget/part/part_detail.dart";
+import "package:inventree/widget/supplier_receive.dart";
+import "package:inventree/widget/supplier_scan_theme.dart";
 
 /// Native supplier lookup. It does not require the Supplier Scan web plugin.
 class SupplierScanWidget extends StatefulWidget {
@@ -143,6 +146,31 @@ class _SupplierScanWidgetState extends State<SupplierScanWidget> {
     }
   }
 
+  Future<void> _previewReceiving() async {
+    if (_busy || !InvenTreeStockItem().canCreate) return;
+    FocusScope.of(context).unfocus();
+    final raw = _barcode.text.trim();
+    if (SupplierBarcode.parse(raw) == null) {
+      setState(
+        () => _error = "Scan or paste a DigiKey, LCSC or JLC label first.",
+      );
+      return;
+    }
+    setState(() => _openingPart = true);
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => SupplierReceiveWidget(
+            barcode: raw,
+            canReceive: InvenTreeStockItem().canCreate,
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _openingPart = false);
+    }
+  }
+
   Widget _labelSummary(ThemeData theme, SupplierBarcode parsed) {
     return Card(
       margin: EdgeInsets.zero,
@@ -165,23 +193,7 @@ class _SupplierScanWidgetState extends State<SupplierScanWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final inherited = Theme.of(context);
-    final theme = inherited.copyWith(
-      textTheme: inherited.textTheme.apply(fontFamily: "Public Sans"),
-      primaryTextTheme: inherited.primaryTextTheme.apply(
-        fontFamily: "Public Sans",
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: inherited.brightness == Brightness.dark
-              ? const Color(0xfff2f4f7)
-              : const Color(0xff171717),
-          foregroundColor: inherited.brightness == Brightness.dark
-              ? const Color(0xff171717)
-              : Colors.white,
-        ),
-      ),
-    );
+    final theme = supplierScanTheme(Theme.of(context));
     final parsed = _parsed;
     return Theme(
       data: theme,
@@ -238,6 +250,16 @@ class _SupplierScanWidgetState extends State<SupplierScanWidget> {
                               icon: const Icon(TablerIcons.search),
                               label: const Text("Find part"),
                             ),
+                            if (InvenTreeStockItem().canCreate)
+                              TextButton.icon(
+                                key: const Key("preview-receiving"),
+                                onPressed:
+                                    _busy || !InvenTreeStockItem().canCreate
+                                    ? null
+                                    : _previewReceiving,
+                                icon: const Icon(Icons.inventory_2_outlined),
+                                label: const Text("Preview receiving"),
+                              ),
                             TextButton(
                               onPressed: _busy
                                   ? null
