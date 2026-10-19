@@ -43,7 +43,9 @@
 		<string>zh-TW</string>
 	</array>
 	<key>CFBundleName</key>
-	<string>InvenTree</string>
+	<string>Omni Gears</string>
+	<key>CFBundleDisplayName</key>
+	<string>Omni Gears</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
