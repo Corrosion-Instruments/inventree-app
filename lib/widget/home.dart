@@ -31,6 +31,7 @@ import "package:inventree/widget/refreshable_state.dart";
 import "package:inventree/widget/snacks.dart";
 import "package:inventree/widget/company/company_list.dart";
 import "package:inventree/widget/supplier_scan.dart";
+import "package:inventree/widget/image_gallery.dart";
 
 /*
  * Build a small count badge with the given background/foreground colors,
@@ -205,6 +206,14 @@ class _InvenTreeHomePageState extends State<InvenTreeHomePage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SupplierScanWidget()),
+    );
+  }
+
+  void _showImageGallery(BuildContext context) {
+    if (!InvenTreeAPI().checkConnection()) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ImageGalleryWidget()),
     );
   }
 
@@ -567,6 +576,17 @@ class _InvenTreeHomePageState extends State<InvenTreeHomePage>
           "Supplier Scan",
           TablerIcons.scan,
           callback: () => _showSupplierScan(context),
+        ),
+      );
+    }
+
+    if (InvenTreePart().canView) {
+      tiles.add(
+        _listTile(
+          context,
+          "Image Gallery",
+          Icons.photo_library_outlined,
+          callback: () => _showImageGallery(context),
         ),
       );
     }

@@ -1,3 +1,12 @@
+## Omni Gears 0.25.6 - October 2026
+---
+
+- Add Image Gallery to Home and the side menu, using the current server's Parts access.
+- Search filenames, part names, IPNs and descriptions, with shared images grouped together.
+- Hide JLCPCB images by default; include them with the switch and show them last.
+- Use equal responsive cards and Public Sans typography.
+- Open full-screen, zoomable images, copy filenames and open linked parts.
+
 ## Omni Gears 0.25.5 - October 2026
 ---
 

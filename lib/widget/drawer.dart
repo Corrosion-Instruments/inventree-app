@@ -23,6 +23,7 @@ import "package:inventree/widget/notifications.dart";
 import "package:inventree/widget/order/purchase_order_list.dart";
 import "package:inventree/widget/stock/location_display.dart";
 import "package:inventree/widget/supplier_scan.dart";
+import "package:inventree/widget/image_gallery.dart";
 
 /*
  * Custom "drawer" widget for the InvenTree app.
@@ -136,6 +137,16 @@ class _InvenTreeDrawerState extends State<InvenTreeDrawer> {
       Navigator.push(
         widget.parentContext,
         MaterialPageRoute(builder: (context) => const SupplierScanWidget()),
+      );
+    }
+  }
+
+  void _imageGallery() {
+    _closeDrawer();
+    if (_checkConnection()) {
+      Navigator.push(
+        widget.parentContext,
+        MaterialPageRoute(builder: (context) => const ImageGalleryWidget()),
       );
     }
   }
@@ -273,6 +284,16 @@ class _InvenTreeDrawerState extends State<InvenTreeDrawer> {
           title: const Text("Supplier Scan"),
           leading: Icon(TablerIcons.scan, color: COLOR_ACTION),
           onTap: _supplierScan,
+        ),
+      );
+    }
+
+    if (InvenTreePart().canView) {
+      tiles.add(
+        ListTile(
+          title: const Text("Image Gallery"),
+          leading: Icon(Icons.photo_library_outlined, color: COLOR_ACTION),
+          onTap: _imageGallery,
         ),
       );
     }

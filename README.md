@@ -37,6 +37,25 @@ User documentation for the InvenTree mobile app can be found [within the InvenTr
 
 Refer to the [build instructions](BUILDING.md) for information on how to build the app from source.
 
+## Image Gallery
+
+Open **Image Gallery** from Home or the side menu. Search by filename, part name,
+IPN or description. The **JLCPCB** switch is off initially and hides filenames
+starting with `part-` (case insensitive). Turning it on includes these images
+after all other images. Shared images appear once, with all linked parts in the
+image preview. Tap a card's part name to open that part, or tap the image for a
+full-screen preview with pinch zoom. The copy icon copies the full filename.
+
+The gallery uses bundled Public Sans and a responsive grid with equal card sizes.
+Refresh with the toolbar button or pull down. Search and the supplier-image switch
+remain selected during refresh. It reads the current server's normal authenticated
+Parts API, including every result page, and requires Parts view access. No Image
+Gallery server plugin is required. The initial load reads all parts because older
+servers do not support filtering parts by image; later searches work locally.
+
+Run `flutter test test/image_gallery_test.dart` for gallery pagination, grouping,
+search, sorting, image preview, copy, navigation, error recovery and layout checks.
+
 ## Supplier Scan
 
 Open **Supplier Scan** from the home screen or side menu. Scan a DigiKey ECIA
